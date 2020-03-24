@@ -12,7 +12,8 @@ const blog = new mongoose.Schema({
 
 //全查找
 blog.statics.findAll= function (callback) {
-    this.find({},callback);
+    this.find({}).sort([['_id', -1]]).exec(callback);
+	
 }
 
 //根据id查找
