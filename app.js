@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users');
 var sitesRoutere = require('./routes/sites');
 var blogsRoutere = require('./routes/blogs');
 var outbreakRoutere = require('./routes/outbreaks');
+var globalOutbreakRoutere = require('./routes/globalOutbreaks');
 
 var app = express();
 
@@ -32,6 +33,7 @@ app.use('/users', usersRouter);
 app.use('/sites',sitesRoutere);
 app.use('/blogs',blogsRoutere);
 app.use('/outbreaks',outbreakRoutere);
+app.use('/globalOutbreak',globalOutbreakRoutere);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

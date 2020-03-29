@@ -19,6 +19,12 @@ router.get('/getAll',function(req, res, next) {
     })
 });
 
+router.post('/getByname',function(req, res, next) {
+    outbreak.findByName(req.body.name,function (err,allOutbreak){
+        res.json({status:1,message:allOutbreak})
+    })
+});
+
 //更新/插入数据
 router.post('/newAll',function(req, res, next) {
 	 let newslist=req.body.data
@@ -30,6 +36,8 @@ router.post('/newAll',function(req, res, next) {
 		 count_arr=res_item[0].currentConfirmedCount.length
 		 console.log("我已经记录的天数:"+count_arr)
 	 })
+	 
+	 
 	 
 	 newslist.forEach(function(val,index,arr){
 	 						  //val是一个对象
@@ -54,20 +62,24 @@ router.post('/newAll',function(req, res, next) {
 										 //先确定当前记录天数,数据数组长度count_arr
 										 console.log("[!]今天更新的国家是:"+name)
 										 
-										 
-										 if(count_arr!=0)
-										 var zero_arr = new Array(count_arr-1).fill(0);
+										 if(count_arr!=0){var zero_arr = new Array(count_arr).fill(0);}
 										 else { var zero_arr=[] }
 											 
+										 var new_A=zero_arr.concat()
+										 var new_B=zero_arr.concat()
+										 var new_C=zero_arr.concat()
 										 
-										 var new_A=zero_arr
-										 var new_B=zero_arr
-										 var new_C=zero_arr
+										 if(new Date().getHours()==23){
+										 	console.log("现在是晚上23点,更新数据而不是添加")
+										 	new_A.pop()
+										 	new_B.pop()
+										 	new_C.pop()
+										 }
 										 
 										 new_A.push(currentConfirmedCount)
 										 new_B.push(curedCount)
 										 new_C.push(deadCount)
-										 
+
 										 var outbreak_item = new outbreak({
 										 
 										        name:name,
@@ -90,6 +102,12 @@ router.post('/newAll',function(req, res, next) {
 									 A=res_item[0].currentConfirmedCount
 									 B=res_item[0].curedCount
 									 C=res_item[0].deadCount
+									 
+									 if(new Date().getHours()==23){
+									 	A.pop()
+									 	B.pop()
+									 	C.pop()
+									 }
 									 
 									 A.push(currentConfirmedCount)
 									 B.push(curedCount)
@@ -124,6 +142,53 @@ router.post('/newAll',function(req, res, next) {
 							  
 	 })
 	 
+	 res.json({status:1,message:"一切都成功啦"})
+});
+
+//更新插入旧数据
+router.post('/newAllOld',function(req, res, next) {
+	 var newslist=req.body.data
+	 //console.log(newslist)//打印newslist
+	 
+	 outbreak.findAll(function (err,allOutbreak){
+		 console.log("数据库一共有:"+allOutbreak.length)
+		 var count_new=0
+	     allOutbreak.forEach(function(obj,index,arr){
+			 let A=obj.currentConfirmedCount
+			 let B=obj.curedCount
+			 let C=obj.deadCount
+			 
+			 A.unshift(0)
+			 B.unshift(0)
+			 C.unshift(0)//所有数据添加一列0 之后在更新
+			 
+			 //如果改名字存在在newlist,再继续更新头部
+			 let result = newslist.find(function (news_obj) { if (news_obj.provinceName== obj.name) { return news_obj;}})
+			 if(!result){
+			 	console.log("以前不存在的数据国家:"+obj.name)
+			 }else{
+			 	//更新头部
+				A[0]=result.currentConfirmedCount
+				B[0]=result.curedCount
+				C[0]=result.deadCount
+			 }
+			 
+			 outbreak.updateOne({name:obj.name},{
+			  	currentConfirmedCount:A,
+			  	curedCount:B,
+			  	deadCount:C
+			  }, function (err,ret) {
+			  	if(err) {
+			  		//console.log('旧数据更新失败')
+			 		console.log(err)
+			  	} else {
+
+			  	}
+			  })
+			  
+		 })
+	 })
+						 	   
 	 res.json({status:1,message:"一切都成功啦"})
 });
 
