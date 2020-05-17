@@ -5,11 +5,33 @@ var outbreak= require('../model/outbreak');
 
 //数据库引入
 const  mongoose =require('mongoose');
+var flag=true
+
+var Hour=12
 
 //定义路由A
 /* GET home page. */
-router.get('/', function(req, res, next) {
-    res.send("这是index路由哦");
+router.get('/hello', function(req, res, next) {
+	
+	
+	let time = new Date()
+	if(time.getHours()!=Hour){flag=true}
+	
+	
+	//未解锁
+	if(flag==false){
+		let k=60-new Date().getMinutes()
+		res.send("一个小时内无法访问接口,距离重新开放还有"+k+"分钟")
+	}else{
+		if(time.getHours()==Hour){
+			flag=false	
+		}//如果是12点访问,第一次可以成功,之后上锁,一个小时内无法访问接口
+		
+	}
+	
+	res.send("代码执行")
+    
+	
 });
 
 //所有数据
@@ -19,6 +41,67 @@ router.get('/getAll',function(req, res, next) {
     })
 });
 
+//获得所有数据的增长率＋现存确诊
+router.get('/getAll2',function(req, res, next) {
+    outbreak.findAll(function (err,allOutbreak){
+		
+		//处理一下allOutbreak,只要7天的就行了
+		
+		allOutbreak.forEach((obj,index,arr)=>{
+			obj.currentConfirmedCount=obj.currentConfirmedCount.slice(-7)
+			obj.curedCount=obj.curedCount.slice(-7)
+			obj.deadCount=obj.deadCount.slice(-7)
+		})
+		
+        res.json({status:1,message:allOutbreak})
+    })
+});
+
+router.get('/getAll_CAGR',function(req, res, next) {
+    outbreak.findAll(function (err,allOutbreak){
+		
+		let result=[]
+		//处理一下allOutbreak,只要7天的就行了
+		
+		allOutbreak.forEach((obj,index,arr)=>{
+			obj.currentConfirmedCount=obj.currentConfirmedCount.slice(-7)
+			obj.curedCount=obj.curedCount.slice(-7)
+			obj.deadCount=obj.deadCount.slice(-7)
+			
+			let confirmedCount=add(add(obj.currentConfirmedCount,obj.curedCount),obj.deadCount)
+			let min = confirmedCount[0]
+			let max = confirmedCount[6]
+
+            //每个数组格式[国家,增长率,现存确诊]
+			let currentConfirmedCount=obj.currentConfirmedCount[6]>0?obj.currentConfirmedCount[6]:0
+			let oneResult=[currentConfirmedCount,(CAGR(min,max,7)*100).toFixed(2),obj.name]
+			
+			result.push(oneResult)
+		})
+		
+		
+		
+		//7天增长率计算,7天为一期
+		function CAGR(start,end,day){
+		   if(start==0){start=1}
+		   if(end==0)return 0
+		   return Math.pow((end/start), (1/day)) -1
+		
+		}
+		
+		//数组和
+		function add(arr1,arr2){
+		   return arr1.map((val,index)=>{
+		        return val+arr2[index]
+		   })
+		}
+		
+	  
+        res.json({status:1,message:result})
+    })
+});
+
+
 router.post('/getByname',function(req, res, next) {
     outbreak.findByName(req.body.name,function (err,allOutbreak){
         res.json({status:1,message:allOutbreak})
@@ -27,6 +110,25 @@ router.post('/getByname',function(req, res, next) {
 
 //更新/插入数据
 router.post('/newAll',function(req, res, next) {
+	
+	/********************************/
+	let time = new Date()
+	if(time.getHours()!=Hour){flag=true}
+	
+	
+	//未解锁
+	if(flag==false){
+		let k=60-new Date().getMinutes()
+		res.send("一个小时内无法访问接口,距离重新开放还有"+k+"分钟")
+	}else{
+		if(time.getHours()==Hour){
+			flag=false	
+		}//如果是12点访问,第一次可以成功,之后上锁,一个小时内无法访问接口
+		
+	}
+	/********************************/
+	
+	
 	 let newslist=req.body.data
 	 //console.log(newslist)//打印newslist
 	 
@@ -69,12 +171,17 @@ router.post('/newAll',function(req, res, next) {
 										 var new_B=zero_arr.concat()
 										 var new_C=zero_arr.concat()
 										 
-										 if(new Date().getHours()==23){
-										 	console.log("现在是晚上23点,更新数据而不是添加")
+										 console.log(new Date().getHours())
+										 if(new Date().getHours()!=Hour){
+										 	console.log("现在不是12点,更新数据而不是添加")
+											
 										 	new_A.pop()
 										 	new_B.pop()
 										 	new_C.pop()
 										 }
+										 
+
+										 
 										 
 										 new_A.push(currentConfirmedCount)
 										 new_B.push(curedCount)
@@ -103,7 +210,7 @@ router.post('/newAll',function(req, res, next) {
 									 B=res_item[0].curedCount
 									 C=res_item[0].deadCount
 									 
-									 if(new Date().getHours()==23){
+									if(new Date().getHours()!=Hour){
 									 	A.pop()
 									 	B.pop()
 									 	C.pop()
@@ -114,11 +221,7 @@ router.post('/newAll',function(req, res, next) {
 									 C.push(deadCount)
 									
 									 
-									 
-									 /*A.pop()
-									 B.pop()
-									 C.pop()*/
-									 
+
 									 
 									 
 									 outbreak.updateOne({name:name},{
@@ -142,7 +245,7 @@ router.post('/newAll',function(req, res, next) {
 							  
 	 })
 	 
-	 res.json({status:1,message:"一切都成功啦"})
+	 res.json({status:1,message:"outbreak更新成功"})
 });
 
 //更新插入旧数据
@@ -158,9 +261,9 @@ router.post('/newAllOld',function(req, res, next) {
 			 let B=obj.curedCount
 			 let C=obj.deadCount
 			 
-			 A.unshift(0)
-			 B.unshift(0)
-			 C.unshift(0)//所有数据添加一列0 之后在更新
+			 A.push(0)
+			 B.push(0)
+			 C.push(0)//所有数据添加一列0 之后在更新
 			 
 			 //如果改名字存在在newlist,再继续更新头部
 			 let result = newslist.find(function (news_obj) { if (news_obj.provinceName== obj.name) { return news_obj;}})
@@ -168,9 +271,10 @@ router.post('/newAllOld',function(req, res, next) {
 			 	console.log("以前不存在的数据国家:"+obj.name)
 			 }else{
 			 	//更新头部
-				A[0]=result.currentConfirmedCount
-				B[0]=result.curedCount
-				C[0]=result.deadCount
+				let len=A.length-1
+				A[len]=result.currentConfirmedCount
+				B[len]=result.curedCount
+				C[len]=result.deadCount
 			 }
 			 
 			 outbreak.updateOne({name:obj.name},{

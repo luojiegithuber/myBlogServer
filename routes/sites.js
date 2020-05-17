@@ -64,6 +64,7 @@ router.post('/addNewUrl',function(req, res, next) {
     if(!req.body.url){
         res.json({status:0,message:"网址为空！"})
     }
+	
 
     site.findByUrl(req.body.url,function (err,siteSave) {
         if(siteSave.length!=0){
@@ -82,11 +83,21 @@ router.post('/addNewUrl',function(req, res, next) {
                 var newSite = new site({
                     title:url_title,
                     url:req.body.url,
+					__v:req.body.__v,
                     date:today.toString()
                 })
 
-                newSite.save(function(){
-                    res.json({status:0,message:"插入新网址成功！:"+url_title})
+                newSite.save(function(error,result){
+					
+					site.updateOne({_id:result._id},{__v:req.body.__v,},function (err,ret) {
+				           if(err) {
+					             console.log('更新__v失败')
+								 res.send("失败啦")
+				                } 
+							res.json({status:0,message:"插入新网址成功！:"+url_title})	
+				           })
+					
+                    
                 })
 
 

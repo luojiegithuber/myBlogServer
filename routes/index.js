@@ -10,7 +10,7 @@ const  mongoose =require('mongoose');
 //定义路由A
 /* GET home page. */
 router.get('/', function(req, res, next) {
-    res.send("这是index路由哦");
+    res.send("这是index路由哦?");
 });
 
 router.get('/mongooseTest', function(req, res, next) {

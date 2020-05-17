@@ -24,7 +24,7 @@ router.post('/touxiang', singleMidle, function(req, res, next) {
 });
 
 
-var today = date.format(new Date(),'YYYY-MM-DD');      // 2019-01-01
+
 
 /* GET users listing. */
 router.post('/1', function(req, res, next) {
@@ -93,7 +93,8 @@ router.get('/Picture_url/:picture',function(req, res, next) {
 
 //新增博客
 router.post('/addNewBlog',singleMidle,function(req, res, next) {
-
+    
+	var today = date.format(new Date(),'YYYY-MM-DD');      // 2019-01-01
 
     //处理博客文本内容
               var newBlog = new blog({

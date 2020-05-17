@@ -3,6 +3,9 @@ const  router = express.Router();
 const  multer = require('multer');
 var globalOutbreak= require('../model/globalOutbreak');
 
+var HOUR=12
+
+
 //数据库引入
 const  mongoose =require('mongoose');
 
@@ -11,8 +14,6 @@ const  mongoose =require('mongoose');
 router.get('/', function(req, res, next) {
     res.send("这是index路由哦");
 });
-
-
 
 //得到newslist数据————用于WorldMap
 router.get('/getNewslist',function(req, res, next) {
@@ -30,12 +31,15 @@ router.post('/updateNewslist',function(req, res, next) {
 
 		globalOutbreak.updateOne({name:'worldmap'},{
 			newslist:req.body.data,
+			
+			
 		}, function (err,ret) {
 			if(err) {
 				console.log('更新失败')
 				console.log(err)
 			} else {
 			  console.log('newslist更新成功:')
+			  //res.send('newslist更新成功:')
 			}})
 });
 
@@ -48,8 +52,24 @@ router.get('/getInc',function(req, res, next) {
 
 //更新Global的数据
 router.post('/updateInc',function(req, res, next) {
-	    
-		console.log(req.body.data)
+	    /********************************/
+	    let time = new Date()
+	    if(time.getHours()!=HOUR){flag=true}
+		
+
+	    //未解锁
+	    if(flag==false){
+	    	let k=60-new Date().getMinutes()
+	    	console.log("一个小时内无法访问接口,距离重新开放还有"+k+"分钟")
+
+	    }else{
+	    	if(time.getHours()==HOUR){
+	    		flag=false	
+	    	}//如果是12点访问,第一次可以成功,之后上锁,一个小时内无法访问接口
+	    	
+	    }
+
+		//console.log(req.body.data)
 		
 		var confirmedIncr_Arr = []
 		var currentConfirmedIncr_Arr = []
@@ -64,14 +84,15 @@ router.post('/updateInc',function(req, res, next) {
 			deadIncr_Arr=res2[0].deadIncr
 			
 			console.log(confirmedIncr_Arr)
-			if(new Date().getHours()==23){
-				console.log("现在是晚上23点,更新数据而不是添加")
+			console.log(new Date().getHours())
+			if(new Date().getHours()!=HOUR){
+				
+				console.log("现在不是中午12点,更新数据而不是添加")
 				confirmedIncr_Arr.pop()
 				currentConfirmedIncr_Arr.pop()
 				curedIncr_Arr.pop()
 				deadIncr_Arr.pop()
 			}
-				
 			
 			confirmedIncr_Arr.push(req.body.data.confirmedIncr)
 			currentConfirmedIncr_Arr.push(req.body.data.currentConfirmedIncr)
@@ -91,6 +112,7 @@ router.post('/updateInc',function(req, res, next) {
 					console.log(err)
 				} else {
 				  console.log('Inc更新成功:')
+				  //res.send('Inc更新成功:')
 				}})
 	    })
 
