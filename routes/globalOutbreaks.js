@@ -15,6 +15,8 @@ router.get('/', function(req, res, next) {
     res.send("这是index路由哦");
 });
 
+
+
 //得到newslist数据————用于WorldMap
 router.get('/getNewslist',function(req, res, next) {
 
@@ -52,22 +54,7 @@ router.get('/getInc',function(req, res, next) {
 
 //更新Global的数据
 router.post('/updateInc',function(req, res, next) {
-	    /********************************/
-	    let time = new Date()
-	    if(time.getHours()!=HOUR){flag=true}
-		
-
-	    //未解锁
-	    if(flag==false){
-	    	let k=60-new Date().getMinutes()
-	    	console.log("一个小时内无法访问接口,距离重新开放还有"+k+"分钟")
-
-	    }else{
-	    	if(time.getHours()==HOUR){
-	    		flag=false	
-	    	}//如果是12点访问,第一次可以成功,之后上锁,一个小时内无法访问接口
-	    	
-	    }
+	    
 
 		//console.log(req.body.data)
 		

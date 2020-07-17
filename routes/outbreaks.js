@@ -111,22 +111,6 @@ router.post('/getByname',function(req, res, next) {
 //更新/插入数据
 router.post('/newAll',function(req, res, next) {
 	
-	/********************************/
-	let time = new Date()
-	if(time.getHours()!=Hour){flag=true}
-	
-	
-	//未解锁
-	if(flag==false){
-		let k=60-new Date().getMinutes()
-		res.send("一个小时内无法访问接口,距离重新开放还有"+k+"分钟")
-	}else{
-		if(time.getHours()==Hour){
-			flag=false	
-		}//如果是12点访问,第一次可以成功,之后上锁,一个小时内无法访问接口
-		
-	}
-	/********************************/
 	
 	
 	 let newslist=req.body.data

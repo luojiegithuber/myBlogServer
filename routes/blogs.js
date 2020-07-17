@@ -1,4 +1,4 @@
-var express = require('express');
+﻿var express = require('express');
 var router = express.Router();
 var blog = require('../model/blog');
 var date = require("silly-datetime");
@@ -7,6 +7,7 @@ const multiparty = require('multiparty')
 
 let fs = require("fs");
 
+let loveCount=39 //❤
 
 const upload = multer({
     dest:"Blog_picture/"//博客导览图片的保存位置
@@ -33,6 +34,19 @@ router.post('/1', function(req, res, next) {
 
 });
 
+router.get('/addCount', function(req, res, next) {
+
+    loveCount++
+    res.json({status:1,message:loveCount});
+
+});
+
+router.get('/getLoveCount', function(req, res, next) {
+    
+
+    res.json({status:1,message:loveCount});
+
+});
 
 //获取所有的网址
 router.get('/getAllBlog',function(req, res, next) {

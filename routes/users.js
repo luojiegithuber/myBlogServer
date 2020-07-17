@@ -50,9 +50,11 @@ function getMD5Password(id) {
 router.post('/login',function(req, res, next) {
   if(!req.body.username){
     res.json({status:0,message:"用户名为空！"})
+    return;
   }
   if(!req.body.password){
     res.json({status:0,message:"密码为空！"})
+    return;
   }
 
   user.findByUserLogin(req.body.username,req.body.password,function (err, userSave) {
@@ -60,10 +62,12 @@ router.post('/login',function(req, res, next) {
         //通过md5查看密码
         var token_after = getMD5Password(userSave[0]._id)
         res.json({status:1,data:{token:token_after,user:userSave},message:"用户登陆成功！"})
+        return;
       }else{
         //返回空
 
         res.json({status:0,message:"用户名或者密码错误"})
+        return;
       }
   })
 });
