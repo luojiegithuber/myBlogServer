@@ -100,9 +100,23 @@ router.post('/Picture_url',function(req, res, next) {
 
 });
 
+//动态路由取图片
 router.get('/Picture_url/:picture',function(req, res, next) {
     console.log(process.cwd()+"/"+req.params.picture)
     res.sendFile(process.cwd()+"/tempPictureDir/"+req.params.picture)
+});
+
+
+//主页视频栏目取预览图片
+router.get('/homevideo/:name',function(req, res, next) {
+    console.log(process.cwd()+"/"+req.params.name)
+    res.sendFile(process.cwd()+"/homevideo/"+req.params.name)
+});
+
+//主页视频栏目取视频
+router.get('/homevideo/:name',function(req, res, next) {
+    console.log(process.cwd()+"/"+req.params.name)
+    res.sendFile(process.cwd()+"/homevideo/"+req.params.name)
 });
 
 //新增博客
